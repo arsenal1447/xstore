@@ -1,3 +1,5 @@
+copy other's code
+
 xiaoego.com 网站
 ===============================
 
