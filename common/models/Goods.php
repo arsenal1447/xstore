@@ -79,15 +79,15 @@ class Goods extends \yii\db\ActiveRecord
                 'image',
                 'image',
                 'extensions' => 'jpg, png',
-                'mimeTypes' => 'image/jpeg, image/png',
-                'checkExtensionByMimeType' => false,
-                'minSize' => 100,
-                'maxSize' => 204800,
-                'tooBig' => '{attribute}最大不能超过200KB',
-                'tooSmall' => '{attribute}最小不能小于0.1KB',
+//                 'mimeTypes' => 'image/jpeg, image/png',
+//                 'checkExtensionByMimeType' => false,
+//                 'minSize' => 100,
+//                 'maxSize' => 2048000,
+//                 'tooBig' => '{attribute}最大不能超过2MB',
+//                 'tooSmall' => '{attribute}最小不能小于0.1KB',
                 'notImage' => '{file} 不是图片文件'
             ],
-            
+
             [
                 'photos',
                 'image',
@@ -103,26 +103,26 @@ class Goods extends \yii\db\ActiveRecord
                 'skipOnEmpty' => false,
                 'on' => 'updateImages',
             ],
-    
+
             [['category_id', 'store_id', 'is_new', 'is_hot'], 'integer'],
             [['category_id'], 'exist', 'targetClass' => Category::className(), 'targetAttribute' => 'id'],
-            
+
             [['store_id'], 'exist', 'targetClass' => Store::className(), 'targetAttribute' => 'id'],
-            
+
             [['is_new', 'is_hot', 'is_promotion'], 'default', 'value' => self::BOOL_FALSE],
             [['is_new', 'is_hot', 'is_promotion'], 'in', 'range' => [self::BOOL_FALSE, self::BOOL_TRUE]],
-    
+
             [['price', 'price_original', 'cost'], 'number', 'min' => 0],
-            
+
             [['surplus'], 'integer', 'min' => 0, 'max' => 999, 'on' => 'insert'],
             [['surplus'], 'default', 'value' => 0, 'on' => 'insert'],
-            
+
             [['sales'], 'integer', 'min' => 0],
             [['sales', 'cost'], 'default', 'value' => 0],
-    
+
             [['name'], 'string', 'max' => 60],
             [['unit'], 'string', 'max' => 10],
-            
+
             ['description', 'string', 'max' => 255]
         ];
     }
@@ -163,7 +163,7 @@ class Goods extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Category::className(), ['id' => 'category_id']);
     }
-    
+
     /**
      * @return \yii\db\ActiveQuery
      */
@@ -179,7 +179,7 @@ class Goods extends \yii\db\ActiveRecord
     {
         return $this->hasMany(GoodsImg::className(), ['goods_id' => 'id']);
     }
-    
+
     /**
      * @return \yii\db\ActiveQuery
      */
@@ -187,10 +187,10 @@ class Goods extends \yii\db\ActiveRecord
     {
         return $this->hasMany(GoodsSurplus::className(), ['goods_id' => 'id']);
     }
-    
+
     /**
      * 调整库存
-     * 
+     *
      * @param integer $number
      * @param string $remark
      * @throws \Exception
@@ -201,33 +201,33 @@ class Goods extends \yii\db\ActiveRecord
         $number = (int) $number;
         $surplusOriginal = $this->surplus;
         $this->surplus += $number;
-        
+
         if ($this->surplus < 0) {
             $this->surplus = 0;
         }
-        
+
         if ($surplusOriginal == $this->surplus) {
             return true;
         }
-        
+
         $transaction = Yii::$app->db->beginTransaction();
         try {
-        
+
             if (!$this->save(false)) {
                 throw new \Exception('商品错误！');
             }
-        
+
             $goodsSurplus = new GoodsSurplus();
             $goodsSurplus->goods_id = $this->id;
             $goodsSurplus->surplus_before = $surplusOriginal;
             $goodsSurplus->amount = $number;
             $goodsSurplus->surplus_after = $this->surplus;
             $goodsSurplus->remark = $remark;
-            
+
             if (!$goodsSurplus->save(false)) {
                 throw new \Exception('商品库存记录失败！');
             }
-        
+
             $transaction->commit();
             return true;
         } catch (\Exception $e) {
@@ -245,14 +245,14 @@ class Goods extends \yii\db\ActiveRecord
                 self::STATUS_DELETED => '已删除'
             ];
         }
-        
+
         return self::$_statusList;
     }
 
     public function getStatusMsg()
     {
         $list = self::getStatusList();
-        
+
         return isset($list[$this->status]) ? $list[$this->status] : null;
     }
 
@@ -264,14 +264,14 @@ class Goods extends \yii\db\ActiveRecord
                 self::BOOL_FALSE => '非新'
             ];
         }
-        
+
         return self::$_isNewList;
     }
 
     public function getIsNewMsg()
     {
         $list = self::getIsNewList();
-        
+
         return isset($list[$this->is_new]) ? $list[$this->is_new] : null;
     }
 
@@ -283,17 +283,17 @@ class Goods extends \yii\db\ActiveRecord
                 self::BOOL_FALSE => '非热门'
             ];
         }
-        
+
         return self::$_isHotList;
     }
 
     public function getIsHotMsg()
     {
         $list = self::getIsHotList();
-        
+
         return isset($list[$this->is_hot]) ? $list[$this->is_hot] : null;
     }
-    
+
     public static function getIsPromotionList()
     {
         if (self::$_isPromotionList === null) {
@@ -302,14 +302,14 @@ class Goods extends \yii\db\ActiveRecord
                 self::BOOL_FALSE => '非促销'
             ];
         }
-    
+
         return self::$_isPromotionList;
     }
-    
+
     public function getIsPromotionMsg()
     {
         $list = self::getIsPromotionList();
-    
+
         return isset($list[$this->is_promotion]) ? $list[$this->is_promotion] : null;
     }
 }
